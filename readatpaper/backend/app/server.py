@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from summarizer import summarize_text
 
 app = Flask(__name__)
 CORS(app)  # This will allow all domains by default
@@ -14,8 +15,8 @@ def index():
 def handle_data():
     data = request.get_json()
     link = data.get('link')
-    # Your logic here to process the link
-    return jsonify({"summary": "This is a summary of the link: " + link})
+    summary = summarize_text(link)
+    return jsonify({"summary": "This is a summary of the link: " + summary})
 
 if __name__ == '__main__':
     app.run(debug=True)

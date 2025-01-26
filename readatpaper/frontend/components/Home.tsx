@@ -69,6 +69,11 @@ export default function Home() {
       alert('Please enter a valid link!');
       return;
     }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => {
+      controller.abort(); // Abort the fetch request after 2 minutes
+    }, 120000); // Timeout set to 2 minutes (120,000 ms)
   
     try {
       const res = await fetch('http://127.0.0.1:5000/api/data', {
