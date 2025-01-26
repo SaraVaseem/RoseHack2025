@@ -1,3 +1,5 @@
+# Dependencies that we need to download
+
 flask
 requests
 transformers
@@ -5,3 +7,7 @@ google-api-python-client
 flask-sqlalchemy
 mysql-connector-python
 python-dotenv
+beautifulsoup4
+pypdf2
+tf-keras
+
