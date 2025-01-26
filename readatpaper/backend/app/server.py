@@ -8,7 +8,7 @@ CORS(app)
 
 @app.route('/')
 def index():
-    return 'Hello, World!'  # Simple message to check if the server is running
+    return 'Hello World \nServer is opened!'  # Simple message to check if the server is running
 
 @app.route('/api/data', methods=['POST'])
 def handle_data():
