@@ -2,7 +2,7 @@
 
 import NavBar from "../../components/NavBar";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation"; // Import useSearchParams hook
+import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Lekton } from "next/font/google";
 
@@ -11,45 +11,89 @@ const lektonFont = Lekton({
   weight: "400",
 });
 
+interface ButtonProps {
+  title: string;
+  summary: string;
+  onRemove: () => void;
+}
+
+const Button: React.FC<ButtonProps> = ({ title, summary, onRemove }) => {
+  const [isTabOpen, setIsTabOpen] = useState(false);
+
+  const handleClick = () => setIsTabOpen((prevState) => !prevState);
+
+  return (
+    <div className="relative">
+      {/* Full-width Button */}
+      <button
+        onClick={handleClick}
+        className="p-4 w-full bg-white shadow-md text-gray-800 rounded-lg border border-gray-300 hover:shadow-lg hover:bg-gray-100 focus:outline-none transition-all duration-300"
+      >
+        {title}
+      </button>
+
+      {/* Modal */}
+      {isTabOpen && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center text-white z-10">
+          <div className="bg-white text-black rounded-lg shadow-lg p-6 text-center max-w-md w-full">
+            <h2 className="text-2xl mb-4">{title}</h2>
+            <p className="mb-4">{summary || "No summary available."}</p>
+            <button
+              onClick={handleClick}
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-all mr-2"
+            >
+              Close Tab
+            </button>
+            <button
+              onClick={onRemove}
+              className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-all"
+            >
+              Remove Title
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function Page() {
   const searchParams = useSearchParams();
-  const summary = searchParams.get("summary"); // Access 'summary' safely using .get
+  const title = searchParams.get("title");
+  const summary = searchParams.get("summary");
 
-  // State to manage summaries
-  const [summaries, setSummaries] = useState<string[]>([]);
+  const [titles, setTitles] = useState<{ title: string; summary: string }[]>([]);
 
-  // Load summaries from localStorage on initial render
   useEffect(() => {
-    const storedSummaries = localStorage.getItem("summaries");
-    if (storedSummaries) {
-      setSummaries(JSON.parse(storedSummaries)); // Load saved summaries from localStorage
+    const storedTitles = localStorage.getItem("titles");
+    if (storedTitles) {
+      setTitles(JSON.parse(storedTitles));
     }
   }, []);
 
-  // Add new summary to the array and update localStorage
   useEffect(() => {
-    if (summary) {
-      setSummaries((prev) => {
-        if (!prev.includes(summary)) {
-          const updatedSummaries = [...prev, summary];
-          localStorage.setItem("summaries", JSON.stringify(updatedSummaries)); // Save to localStorage
-          return updatedSummaries;
+    if (title && summary) {
+      setTitles((prev) => {
+        if (!prev.some((item) => item.title === title)) {
+          const updatedTitles = [...prev, { title, summary }];
+          localStorage.setItem("titles", JSON.stringify(updatedTitles));
+          return updatedTitles;
         }
         return prev;
       });
     }
-  }, [summary]);
+  }, [title, summary]);
 
-  const handleRemove = (item: string) => {
-    const updatedSummaries = summaries.filter((summary) => summary !== item);
-    setSummaries(updatedSummaries); // Update the state
-    localStorage.setItem("summaries", JSON.stringify(updatedSummaries)); // Persist to localStorage
+  const handleRemove = (itemTitle: string) => {
+    const updatedTitles = titles.filter((item) => item.title !== itemTitle);
+    setTitles(updatedTitles);
+    localStorage.setItem("titles", JSON.stringify(updatedTitles));
   };
 
   return (
     <>
-      <div className={ lektonFont.className}>
-        <NavBar/>
+      <div className={lektonFont.className}>
+        <NavBar />
       </div>
       <div className="bg-gradient-to-t from-gray-100 via-gray-200 to-gray-300 min-h-screen">
         <div className={lektonFont.className}>
@@ -57,37 +101,25 @@ export default function Page() {
             Saved Articles
           </h1>
 
-          {/* Render the summaries in the UI */}
-          <div className="mt-10 ml-8">
-            {summaries.length > 0 ? (
-              <div className="flex flex-col space-y-4">
-                {summaries.map((item, index) => (
-                  <div
-                    key={index}
-                    className="p-4 bg-white shadow rounded-md text-gray-800 flex justify-between items-center"
-                  >
-                    <span>{item}</span>
-                    <button
-                      onClick={() => handleRemove(item)}
-                      className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-700 focus:outline-none"
-                    >
-                      &times; {/* This is the "X" symbol for removal */}
-                    </button>
-                  </div>
-                ))}
-              </div>
+          {/* Render the titles as full-width buttons */}
+          <div className="mt-10 mx-4 space-y-4">
+            {titles.length > 0 ? (
+              titles.map((item, index) => (
+                <Button
+                  key={index}
+                  title={item.title}
+                  summary={item.summary}
+                  onRemove={() => handleRemove(item.title)}
+                />
+              ))
             ) : (
-              <p>No summaries saved yet.</p>
+              <p className="text-center text-gray-700">No articles saved yet.</p>
             )}
           </div>
         </div>
 
         <footer className="flex justify-center mt-auto">
-          <Link
-            href={{
-              pathname: "/",
-            }}
-          >
+          <Link href={{ pathname: "/" }}>
             <button className="bg-black text-white rounded px-6 py-4 hover:bg-blue-600 mt-8 mb-10">
               Back
             </button>

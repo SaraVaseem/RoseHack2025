@@ -4,6 +4,7 @@ import Link from "next/link";
 
 export default function Home() {
   const [userInput, setUserInput] = useState<string>(''); // Input from the user
+  const [finalTitle, setFinalTitle] = useState<string>(''); // Article title
   const [finalSummary, setFinalSummary] = useState<string>(''); // The final summary
   const [displayedSummary, setDisplayedSummary] = useState<string>(''); // Summary with typing effect
   const [isLoading, setIsLoading] = useState<boolean>(false); // Loading state
@@ -12,55 +13,50 @@ export default function Home() {
   const [showCursor, setShowCursor] = useState<boolean>(true); // Cursor blinking effect
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false); // Track if Enter was pressed
 
-  // Reference to the summary section
   const summaryRef = useRef<HTMLDivElement | null>(null);
 
-  // Typing effect logic
   useEffect(() => {
     if (typingIndex < finalSummary.length) {
       const timeout = setTimeout(() => {
         setDisplayedSummary((prev) => prev + finalSummary[typingIndex]);
         setTypingIndex(typingIndex + 1);
-      }, 20); // Typing speed (adjust as needed)
+      }, 20);
       return () => clearTimeout(timeout);
     }
   }, [typingIndex, finalSummary]);
 
-  // Cursor blinking effect
   useEffect(() => {
     const interval = setInterval(() => {
       setShowCursor((prev) => !prev);
-    }, 500); // Blink every 500ms
+    }, 500);
     return () => clearInterval(interval);
   }, []);
 
-  // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUserInput(e.target.value);
-    setIsSubmitted(false); // reset enter key tracking when storing input
+    setIsSubmitted(false);
   };
 
-  // Handle key down (Enter key)
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      setIsSubmitted(true); // Set submission flag
-      sendLink(); // Call the backend
+      setIsSubmitted(true);
+      sendLink();
     }
   };
 
-  // Send link to backend
   const sendLink = async () => {
     if (!userInput) {
       alert('Please enter a valid link!');
       return;
     }
-  
-    setErrorMessage(''); // Clear error messages
-    setFinalSummary(''); // Clear old summaries
-    setDisplayedSummary(''); // Reset typing effect
-    setTypingIndex(0); // Reset typing effect
-    setIsLoading(true); // Start loading state
-  
+
+    setErrorMessage('');
+    setFinalTitle(''); // Clear old title
+    setFinalSummary('');
+    setDisplayedSummary('');
+    setTypingIndex(0);
+    setIsLoading(true);
+
     try {
       const res = await fetch('http://127.0.0.1:5000/api/data', {
         method: 'POST',
@@ -69,10 +65,11 @@ export default function Home() {
         },
         body: JSON.stringify({ link: userInput }),
       });
-  
+
       if (res.ok) {
         const json = await res.json();
-        setFinalSummary(json.summary); // Set final summary for typing effect
+        setFinalTitle(json.title); // Set the article title
+        setFinalSummary(json.summary); // Set the summary
       } else {
         const error = await res.json();
         setErrorMessage(error.error || 'An error occurred while processing your request.');
@@ -81,17 +78,15 @@ export default function Home() {
       console.error('Error sending data:', error);
       setErrorMessage('Something went wrong. Please try again.');
     } finally {
-      setIsLoading(false); // Stop loading state
+      setIsLoading(false);
     }
   };
-  
 
-  // Scroll to summary when finalSummary is updated
   useEffect(() => {
     if (finalSummary && summaryRef.current) {
       summaryRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  }, [finalSummary]); // Trigger scroll when finalSummary changes
+  }, [finalSummary]);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -127,19 +122,23 @@ export default function Home() {
 
       {errorMessage && <p className="mt-4 text-lg text-red-500">{errorMessage}</p>}
 
-      {finalSummary && (
-        <section className="bg-white py-16" ref={summaryRef}>
+      {finalTitle && (
+        <section className="bg-white py-12" ref={summaryRef}>
           <div className="container mx-auto px-4">
-            <h3 className="text-4xl text-center text-gray-800 mb-6">
-              Here is a summary for you
+          <h2 className="text-3xl font-bold text-center mb-4">
+            Here's Your Summary
+          </h2>
+            <h3 className="text-2xl font-style: italic text-center text-gray-800 mb-6">
+              {finalTitle}
             </h3>
             <div className="text-lg text-gray-700 whitespace-pre-wrap">
               <span>{displayedSummary}</span>
-              {showCursor && <span className="inline-block bg-black h-6 w-1 align-middle"></span>} {/* Blinking cursor */}
+              {showCursor && <span className="inline-block bg-black h-6 w-1 align-middle"></span>}
             </div>
           </div>
         </section>
       )}
+
       {finalSummary && (
         <div className="flex items-center justify-center space-x-10">
           <Link
@@ -150,7 +149,7 @@ export default function Home() {
               },
             }}
           >
-            <button className="bg-black text-white rounded px-6 py-4 hover:bg-blue-600 mt-8 mb-10">
+            <button className="bg-black text-white rounded px-6 py-4 hover:bg-gray-600 mt-8 mb-10">
               Save Summary
             </button>
           </Link>
