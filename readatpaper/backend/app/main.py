@@ -1,63 +1,33 @@
-from .helper import helper
-
-def main():
-    print ("Hello from the main file")
-    helper()
-
-if __name__ == "__main__":
-    main()
-
-from fastapi import FastAPI
-from scraper import fetch_paper
-from summarizer import summarize_text
-from recommender import get_related_topics
-
-app = FastAPI()
-
-@app.post("/analyze")
-def analyze_paper(url: str):
-    content = fetch_paper(url)
-    summary = summarize_text(content)
-    related_topics = get_related_topics(summary.split()[:5])
-    return {"summary": summary, "related_links": related_topics}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-    
 from flask import Flask, request, jsonify
 import sqlite3
 
 app = Flask(__name__)
 
-# Function to connect to the database
+# Function to connect to the SQLite database
 def connect_db():
+    """Connect to the SQLite database."""
     return sqlite3.connect("research_papers.db")
 
-# 1. Get main link from frontend
+# Endpoint 1: Get the main link from frontend
 @app.route('/get-main-link', methods=['POST'])
 def get_main_link():
+    """Receive and process the main link from the frontend."""
     data = request.json
     link = data.get('link')
-    
     if not link:
         return jsonify({'error': 'No link provided'}), 400
-
-    # Process the link (e.g., fetch content, summarize, etc.)
     return jsonify({'message': 'Link received successfully', 'link': link})
 
-# 2. Post summary, keywords & links to frontend
+# Endpoint 2: Post summary, keywords, and links to the frontend
 @app.route('/post-summary', methods=['POST'])
 def post_summary():
+    """Send summary, keywords, and related links to the frontend."""
     data = request.json
     summary = data.get('summary')
     keywords = data.get('keywords')
     links = data.get('links')
-
     if not summary or not keywords or not links:
         return jsonify({'error': 'Missing summary, keywords, or links'}), 400
-
-    # Return the data to frontend
     return jsonify({
         'message': 'Summary data sent successfully',
         'summary': summary,
@@ -65,9 +35,10 @@ def post_summary():
         'links': links
     })
 
-# 3. Get link summary, keywords & links from database
+# Endpoint 3: Get summary, keywords, and links from the database
 @app.route('/get-summary-db', methods=['GET'])
 def get_summary_from_db():
+    """Retrieve summary, keywords, and related links for a given link."""
     link = request.args.get('link')
     if not link:
         return jsonify({'error': 'No link provided'}), 400
@@ -89,15 +60,15 @@ def get_summary_from_db():
     else:
         return jsonify({'error': 'No data found for the given link'}), 404
 
-# 4. Post link summary, keywords & links to database
+# Endpoint 4: Post summary, keywords, and links to the database
 @app.route('/post-summary-db', methods=['POST'])
 def post_summary_to_db():
+    """Save summary, keywords, and related links to the database."""
     data = request.json
     link = data.get('link')
     summary = data.get('summary')
     keywords = ','.join(data.get('keywords', []))
     links = ','.join(data.get('links', []))
-
     if not link or not summary or not keywords or not links:
         return jsonify({'error': 'Missing required data'}), 400
 
@@ -109,8 +80,7 @@ def post_summary_to_db():
     )
     conn.commit()
     conn.close()
-
     return jsonify({'message': 'Data stored successfully'})
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True, port=5000)
