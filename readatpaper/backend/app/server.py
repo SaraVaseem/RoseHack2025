@@ -3,6 +3,7 @@ from flask_cors import CORS
 
 from summarizer import summarize_text  # Import the summarizer function
 from scraper import fetch_paper  # Import your fetch_paper function
+from scraper import fetch_article_titles  # Import your fetch article titles
 
 
 app = Flask(__name__)
@@ -14,8 +15,7 @@ def index():
 
 @app.route('/api/data', methods=['POST'])
 def handle_data():
-
-    """Fetch the article, summarize it, and send the summary back."""
+    """Fetch the article, summarize it, and send the summary and title back."""
     try:
         # Get the JSON payload
         data = request.get_json()
@@ -24,6 +24,13 @@ def handle_data():
         if not link:
             return jsonify({"error": "No link provided"}), 400
 
+        # Fetch the title from the link
+        titles = fetch_article_titles(link)
+        if not titles or "Error" in titles[0]:
+            return jsonify({"error": "Failed to fetch titles from the provided link."}), 400
+
+        # Use the first title if multiple titles are found
+        title = titles[0]
 
         # Fetch the content from the link
         content = fetch_paper(link)
@@ -35,8 +42,8 @@ def handle_data():
         if "Error" in summary:
             return jsonify({"error": summary}), 500
 
-        # Return the summary to the frontend
-        return jsonify({"summary": summary})
+        # Return the title and summary to the frontend
+        return jsonify({"title": title, "summary": summary})
 
     except Exception as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500

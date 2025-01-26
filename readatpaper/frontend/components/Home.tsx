@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 
 export default function Home() {
   const [userInput, setUserInput] = useState<string>(''); // Input from the user
+  const [finalTitle, setFinalTitle] = useState<string>(''); // Article title
   const [finalSummary, setFinalSummary] = useState<string>(''); // The final summary
   const [keywords, setKeywords] = useState<string[]>([]); // Extracted keywords
   const [relatedLinks, setRelatedLinks] = useState<Record<string, string[]>>({}); // Related links
@@ -15,93 +16,49 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState<boolean>(false); // Loading state
   const [errorMessage, setErrorMessage] = useState<string>(''); // Error message state
   const [showCursor, setShowCursor] = useState<boolean>(true); // Cursor blinking effect
+  const summaryRef = useRef<HTMLDivElement | null>(null);
 
-  const summaryRef = useRef<HTMLDivElement | null>(null); // Reference for scrolling to summary
-  const headerRef = useRef<HTMLDivElement | null>(null); // Reference for the white header
-
-  // Typing effect logic
   useEffect(() => {
     if (currentSection === 'summary' && typingIndex < finalSummary.length) {
       const timeout = setTimeout(() => {
         setDisplayedSummary((prev) => prev + finalSummary[typingIndex]);
-        setTypingIndex((prev) => prev + 1);
-      }, 20); // Typing speed for summary
+
+        setTypingIndex(typingIndex + 1);
+      }, 20);
       return () => clearTimeout(timeout);
     }
 
-    if (currentSection === 'keywords' && typingIndex < keywords.length) {
-      const timeout = setTimeout(() => {
-        setDisplayedKeywords((prev) => [...prev, keywords[typingIndex]]);
-        setTypingIndex((prev) => prev + 1);
-      }, 50); // Typing speed for keywords
-      return () => clearTimeout(timeout);
-    }
 
-    if (currentSection === 'links' && typingIndex < Object.keys(relatedLinks).length) {
-      const timeout = setTimeout(() => {
-        const keyword = Object.keys(relatedLinks)[typingIndex];
-        const links = relatedLinks[keyword];
-        setDisplayedLinks((prev) => ({ ...prev, [keyword]: links }));
-        setTypingIndex((prev) => prev + 1);
-      }, 100); // Typing speed for links
-      return () => clearTimeout(timeout);
-    }
-
-    // Transition between sections
-    if (currentSection === 'summary' && typingIndex === finalSummary.length) {
-      setCurrentSection('keywords');
-      setTypingIndex(0);
-    } else if (currentSection === 'keywords' && typingIndex === keywords.length) {
-      setCurrentSection('links');
-      setTypingIndex(0);
-    } else if (currentSection === 'links' && typingIndex === Object.keys(relatedLinks).length) {
-      setCurrentSection(null); // Typing effect complete
-      // Scroll to the white header
-      if (headerRef.current) {
-        setTimeout(() => {
-          const headerPosition = headerRef.current.getBoundingClientRect().top + window.scrollY;
-          const offset = -50; // Adjust this value to scroll slightly higher or lower
-          window.scrollTo({ top: headerPosition + offset, behavior: 'smooth' });
-        }, 500); // Add slight delay for smooth scrolling
-      }
-    }
-  }, [typingIndex, currentSection, finalSummary, keywords, relatedLinks]);
-
-  // Blinking cursor logic
   useEffect(() => {
     const interval = setInterval(() => {
       setShowCursor((prev) => !prev);
-    }, 500); // Cursor blinks every 500ms
+    }, 500);
+
     return () => clearInterval(interval);
   }, []);
 
-  // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUserInput(e.target.value);
-    resetStates();
+    setIsSubmitted(false);
   };
 
-  // Reset all states
-  const resetStates = () => {
-    setFinalSummary('');
-    setDisplayedSummary('');
-    setDisplayedKeywords([]);
-    setDisplayedLinks({});
-    setKeywords([]);
-    setRelatedLinks({});
-    setTypingIndex(0);
-    setErrorMessage('');
-    setCurrentSection(null);
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      setIsSubmitted(true);
+      sendLink();
+    }
   };
 
-  // Fetch summary and related data
   const sendLink = async () => {
     if (!userInput) {
       alert('Please enter a valid link!');
       return;
     }
-
-    resetStates();
+    setErrorMessage('');
+    setFinalTitle(''); // Clear old title
+    setFinalSummary('');
+    setDisplayedSummary('');
+    setTypingIndex(0);
     setIsLoading(true);
 
     try {
@@ -115,10 +72,8 @@ export default function Home() {
 
       if (res.ok) {
         const json = await res.json();
-        setFinalSummary(json.summary);
-        setKeywords(json.keywords || []);
-        setRelatedLinks(json.related_links || {});
-        setCurrentSection('summary'); // Start typing effect
+        setFinalTitle(json.title); // Set the article title
+        setFinalSummary(json.summary); // Set the summary
       } else {
         const error = await res.json();
         setErrorMessage(error.error || 'An error occurred while processing your request.');
@@ -131,7 +86,6 @@ export default function Home() {
     }
   };
 
-  // Scroll to summary when available
   useEffect(() => {
     if (finalSummary && summaryRef.current) {
       summaryRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -172,57 +126,38 @@ export default function Home() {
 
       {/* Error Section */}
       {errorMessage && <p className="mt-4 text-lg text-red-500">{errorMessage}</p>}
-
-      {/* Summary Section */}
-      {finalSummary && (
-        <section className="bg-white py-16" ref={summaryRef}>
+      {finalTitle && (
+        <section className="bg-white py-12" ref={summaryRef}>
           <div className="container mx-auto px-4">
-            <h3 className="text-4xl text-center text-gray-800 mb-6">Here is a summary for you</h3>
+          <h2 className="text-3xl font-bold text-center mb-4">
+            Here's Your Summary
+          </h2>
+            <h3 className="text-2xl font-style: italic text-center text-gray-800 mb-6">
+              {finalTitle}
+            </h3>
             <div className="text-lg text-gray-700 whitespace-pre-wrap">
-              {displayedSummary}
-              {currentSection === 'summary' && showCursor && (
-                <span className="inline-block bg-black h-6 w-1 align-middle"></span>
-              )}
+              <span>{displayedSummary}</span>
+              {showCursor && <span className="inline-block bg-black h-6 w-1 align-middle"></span>}
             </div>
           </div>
         </section>
       )}
 
-      {/* Keywords Section */}
-      {displayedKeywords.length > 0 && (
-        <section className="bg-white py-4">
-          <div className="container mx-auto px-4">
-            <h4 className="text-2xl text-gray-800 mb-4">Keywords:</h4>
-            <ul className="list-disc pl-6">
-              {displayedKeywords.map((keyword, idx) => (
-                <li key={idx} className="text-lg text-gray-600">{keyword}</li>
-              ))}
-            </ul>
-          </div>
-        </section>
-      )}
-
-      {/* Related Links Section */}
-      {Object.keys(displayedLinks).length > 0 && (
-        <section className="bg-white py-4" ref={headerRef}>
-          <div className="container mx-auto px-4">
-            <h4 className="text-2xl text-gray-800 mb-4">Related Articles:</h4>
-            {Object.entries(displayedLinks).map(([keyword, links], idx) => (
-              <div key={idx} className="mt-4">
-                <h5 className="text-xl font-bold">{keyword}</h5>
-                <ul className="list-disc pl-6">
-                  {links.map((link, linkIdx) => (
-                    <li key={linkIdx}>
-                      <a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-                        {link}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </section>
+      {finalSummary && (
+        <div className="flex items-center justify-center space-x-10">
+          <Link
+            href={{
+              pathname: "/dashboard",
+              query: {
+                summary: displayedSummary,
+              },
+            }}
+          >
+            <button className="bg-black text-white rounded px-6 py-4 hover:bg-gray-600 mt-8 mb-10">
+              Save Summary
+            </button>
+          </Link>
+        </div>
       )}
     </div>
   );
