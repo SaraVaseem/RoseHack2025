@@ -16,3 +16,15 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Initialize SQLAlchemy
 
 db = SQLAlchemy(app)
+
+# Define the AnalysisResult model
+
+class AnalysisResult(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    input_text = db.Column(db.Text, nullable = False)   # User-provided input text
+    summary = db.Column(db.Text, nullable = False)      # Generated summary
+    topics = db.Column(db.Text, nullable = False)       # Extracted topics (comma-separated string)
+    articles = db.Column(db.Text, nullable = False)     # Related articles (stored as JSON string)
+
+    def __repr_(self):
+        return f"<AnalysisResult {self.id}"
