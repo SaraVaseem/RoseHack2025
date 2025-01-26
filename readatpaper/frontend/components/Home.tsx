@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from 'next/navigation';
 import SaveButton from "./SaveButton";
 import DontSaveButton from "./DontSaveButton";
+import Link from "next/link";
 
 interface Data{
   link: string;
@@ -169,7 +170,16 @@ export default function Home() {
           </section>
 
           <div className="flex item-center justify-center space-x-10">
-            <SaveButton />
+            <Link
+                href={{
+                  pathname: "/dashboard",
+                  query: {
+                    summary: userInput,
+                  },
+                }}
+              >
+                Save Summary
+              </Link>
             <DontSaveButton />
           </div>
         </>
