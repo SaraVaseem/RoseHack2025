@@ -14,14 +14,14 @@ export default function Home() {
         }}
       >
         {/* Centered Content */}
-        <h2 className="text-4xl text-black mb-4">Readatpaper.io</h2>
+        <h2 className="text-6xl text-black mb-4">Readatpaper.io</h2>
         
         {/* Search Bar */}
         <div className="relative w-full max-w-lg">
           <input
             type="text"
-            placeholder="Search..."
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Input article link here..."
+            className="w-full px-4 py-2 border-2 border-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </main>
