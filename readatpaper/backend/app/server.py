@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+
 from summarizer import summarize_text  # Import the summarizer function
 from scraper import fetch_paper  # Import your fetch_paper function
+
 
 app = Flask(__name__)
 CORS(app)
@@ -12,6 +14,7 @@ def index():
 
 @app.route('/api/data', methods=['POST'])
 def handle_data():
+
     """Fetch the article, summarize it, and send the summary back."""
     try:
         # Get the JSON payload
@@ -20,6 +23,7 @@ def handle_data():
         
         if not link:
             return jsonify({"error": "No link provided"}), 400
+
 
         # Fetch the content from the link
         content = fetch_paper(link)

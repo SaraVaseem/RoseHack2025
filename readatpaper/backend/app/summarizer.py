@@ -16,6 +16,7 @@ def summarize_text(content):
 # Generate a summary using the Hugging Face API
     # API endpoint for the Hugging Face model
     api_url = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn"
+
     # Load API key from the environment variable
     api_key = os.getenv("HUGGINGFACE_API_KEY")
     if not api_key:

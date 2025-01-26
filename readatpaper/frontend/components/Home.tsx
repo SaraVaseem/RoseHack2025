@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import SaveButton from "./SaveButton";
 import DontSaveButton from "./DontSaveButton";
 
@@ -11,7 +11,10 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState<string>(''); // Error message state
   const [typingIndex, setTypingIndex] = useState<number>(0); // Typing effect state
   const [showCursor, setShowCursor] = useState<boolean>(true); // Cursor blinking effect
-
+  const summaryRef = useRef<HTMLDivElement | null>(null); // Create a ref for the section to scroll into view
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+  const summaryRef = useRef<HTMLDivElement | null>(null);
+    
   // Typing effect logic
   useEffect(() => {
     if (typingIndex < finalSummary.length) {
@@ -40,7 +43,7 @@ export default function Home() {
 
   const sendLink = async () => {
     if (!userInput) {
-      alert('Please enter a valid link!');
+      alert("Please enter a valid link!");
       return;
     }
 
@@ -51,11 +54,11 @@ export default function Home() {
     setIsLoading(true); // Start loading state
 
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/data', {
-        method: 'POST',
+      const res = await fetch("http://127.0.0.1:5000/api/data", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-        },
+          "Content-Type": "application/json",
+
         body: JSON.stringify({ link: userInput }),
       });
 
@@ -73,6 +76,11 @@ export default function Home() {
       setIsLoading(false); // Stop loading state
     }
   };
+  useEffect(() => {
+    if (isSubmitted && summaryRef.current) {
+      summaryRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [isSubmitted]);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -80,11 +88,13 @@ export default function Home() {
         className="flex flex-col items-center justify-center min-h-screen bg-cover bg-center"
         style={{
           backgroundImage: "url('/images/background.png')",
+
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed',
         }}
       >
+
         <h2 className="text-6xl text-black mb-8">Readatpaper.io</h2>
         <div className="relative flex flex-col items-center w-full max-w-lg space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
           <input
@@ -107,8 +117,8 @@ export default function Home() {
 
       {errorMessage && <p className="mt-4 text-lg text-red-500">{errorMessage}</p>}
 
-      {finalSummary && (
-        <section className="bg-white py-16">
+      {finalSummary && isSubmitted && userInput &&(
+        <section className="bg-white py-16" ref={summaryRef}>
           <div className="container mx-auto px-4">
             <h3 className="text-4xl text-center text-gray-800 mb-6">
               Here is a summary for you
