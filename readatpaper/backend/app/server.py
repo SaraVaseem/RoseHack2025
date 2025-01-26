@@ -15,8 +15,7 @@ def index():
 def handle_data():
     data = request.get_json()
     link = data.get('link')
-    summary = summarize_text(link)
-    return jsonify({"summary": "This is a summary of the link: " + summary})
+    return jsonify({"summary": "This is a summary of the link: " + link})
 
 if __name__ == '__main__':
     app.run(debug=True)
