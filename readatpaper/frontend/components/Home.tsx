@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import SaveButton from "./SaveButton";
 import DontSaveButton from "./DontSaveButton";
+import Link from "next/link";
 
 export default function Home() {
   const [userInput, setUserInput] = useState<string>(''); // Input from the user
@@ -111,6 +112,20 @@ export default function Home() {
             <div className="text-lg text-gray-700 whitespace-pre-wrap">
               {displayedSummary || "Typing..."}
             </div>
+          </section>
+
+          <div className="flex item-center justify-center space-x-10">
+            <Link
+                href={{
+                  pathname: "/dashboard",
+                  query: {
+                    summary: userInput,
+                  },
+                }}
+              >
+                Save Summary
+              </Link>
+            <DontSaveButton />
           </div>
         </section>
       )}
