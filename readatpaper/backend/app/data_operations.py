@@ -43,13 +43,13 @@ def query_by_title(title):
 
 # Example usage
 insert_data(
-    title='How old is Bach',
-    url='bach.com',
-    summary='Bach is very cool but we do not know how old he is.',
-    topics=['will', 'sara', 'brandon', 'rose'],
+    title='Monkeys',
+    url='typer.com',
+    summary='monkey is very cool but we do not know how old he is.',
+    topics=['123', '4444', 'brandon', 'rose'],
     articles_dict={
-        "will": ["url1.com", "url2.com"],
-        "sara": ["url3.com"],
+        "123": ["url1.com", "url2.com"],
+        "4444": ["url3.com"],
         "brandon": ["url4.com"],
         "rose": ["url5.com"]
     }
