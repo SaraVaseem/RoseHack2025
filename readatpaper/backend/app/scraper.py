@@ -10,13 +10,13 @@ def fetch_paper(url):
         return fetch_web_content(url)
 
 def fetch_web_content(url):
-    response = requests.get(url)
-    if response.status_code == 200:
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
-        content = soup.get_text()
-        return content.strip()
-    else:
-        raise Exception(f"Failed to fetch webpage. Status code: {response.status_code}")
+        return soup.get_text().strip()
+    except requests.exceptions.RequestException as e:
+        return f"Error fetching webpage: {e}"
 
 def fetch_pdf_content(url):
     response = requests.get(url)
