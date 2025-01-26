@@ -1,0 +1,7 @@
+flask
+requests
+transformers
+google-api-python-client
+flask-sqlalchemy
+mysql-connector-python
+python-dotenv
