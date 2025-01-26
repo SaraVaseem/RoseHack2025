@@ -2,6 +2,7 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
+import json
 
 # Load environment variables from .env file
 load_dotenv()
@@ -18,14 +19,23 @@ db = SQLAlchemy(app)
 
 # Define the AnalysisResult model
 class AnalysisResult(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    input_text = db.Column(db.Text, nullable=False)
-    summary = db.Column(db.Text, nullable=False)
-    topics = db.Column(db.Text, nullable=False)
-    articles = db.Column(db.Text, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)    # Unique identifier
+    title = db.Column(db.Text, nullable=False)      # Title of the article or research paper
+    url = db.Column(db.Text, nullable=False)        # URL of the input article
+    summary = db.Column(db.Text, nullable=False)    # Generated summary of the article
+    topics = db.Column(db.Text, nullable=False)     # Comma-separated list of extracted topics
+    articles = db.Column(db.Text, nullable=False)   # JSON string of related links for each topic
 
     def __repr__(self):
         return f"<AnalysisResult {self.id}>"
+
+    def get_articles(self):
+        """Return articles as a parsed JSON object."""
+        return json.loads(self.articles)
+
+    def set_articles(self, articles_dict):
+        """Set articles as a JSON string."""
+        self.articles = json.dumps(articles_dict)
 
 # Create the database tables
 if __name__ == '__main__':
