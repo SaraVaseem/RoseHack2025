@@ -11,7 +11,6 @@ export default function Page() {
         <div>
             <div className={ lektonFont.className}>
                 <NavBar/>
-
                 DashBoard
             </div>
         </div>
