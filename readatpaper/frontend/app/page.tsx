@@ -1,4 +1,5 @@
 import NavBar from '../components/NavBar';
+import Home from '../components/Home';
 import { Lekton } from "next/font/google";
 
 const lektonFont = Lekton({
@@ -11,6 +12,7 @@ export default function Page() {
         <div>
             <div className={ lektonFont.className}>
                 <NavBar/>
+                <Home/>
             </div>
         </div>
     );
