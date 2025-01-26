@@ -1,10 +1,11 @@
-import findspark
-findspark.init()
+from transformers import pipeline
 
-from pyspark.sql import SparkSession
+# Load the summarization pipeline
+summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
 
-# Create a Spark session
-spark = SparkSession.builder.appName("JupyterSpark").getOrCreate()
-
-# Check Spark session
-print("Spark version:", spark.version)
+def summarize_text(text):
+    # Use the summarizer to generate a summary
+    summary = summarizer(text, max_length=100, min_length=25, do_sample=False)
+    
+    # Return the summarized text
+    return summary[0]['summary_text']
