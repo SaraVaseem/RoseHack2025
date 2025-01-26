@@ -1,7 +1,6 @@
 'use client';
-import { useState, useRef, useEffect } from "react";
-import SaveButton from "./SaveButton";
-import DontSaveButton from "./DontSaveButton";
+import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 
 export default function Home() {
   const [userInput, setUserInput] = useState<string>(''); // Input from the user
@@ -11,10 +10,11 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState<string>(''); // Error message state
   const [typingIndex, setTypingIndex] = useState<number>(0); // Typing effect state
   const [showCursor, setShowCursor] = useState<boolean>(true); // Cursor blinking effect
-  const summaryRef = useRef<HTMLDivElement | null>(null); // Create a ref for the section to scroll into view
-  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(false); // Track if Enter was pressed
+
+  // Reference to the summary section
   const summaryRef = useRef<HTMLDivElement | null>(null);
-    
+
   // Typing effect logic
   useEffect(() => {
     if (typingIndex < finalSummary.length) {
@@ -34,34 +34,42 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUserInput(e.target.value);
-    setFinalSummary(''); // Clear previous summary
-    setDisplayedSummary(''); // Reset typing effect
-    setTypingIndex(0); // Reset typing index
+    setIsSubmitted(false); // reset enter key tracking when storing input
   };
 
+  // Handle key down (Enter key)
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      setIsSubmitted(true); // Set submission flag
+      sendLink(); // Call the backend
+    }
+  };
+
+  // Send link to backend
   const sendLink = async () => {
     if (!userInput) {
-      alert("Please enter a valid link!");
+      alert('Please enter a valid link!');
       return;
     }
-
+  
     setErrorMessage(''); // Clear error messages
     setFinalSummary(''); // Clear old summaries
     setDisplayedSummary(''); // Reset typing effect
     setTypingIndex(0); // Reset typing effect
     setIsLoading(true); // Start loading state
-
+  
     try {
-      const res = await fetch("http://127.0.0.1:5000/api/data", {
-        method: "POST",
+      const res = await fetch('http://127.0.0.1:5000/api/data', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ link: userInput }),
       });
-
+  
       if (res.ok) {
         const json = await res.json();
         setFinalSummary(json.summary); // Set final summary for typing effect
@@ -76,11 +84,14 @@ export default function Home() {
       setIsLoading(false); // Stop loading state
     }
   };
+  
+
+  // Scroll to summary when finalSummary is updated
   useEffect(() => {
-    if (isSubmitted && summaryRef.current) {
+    if (finalSummary && summaryRef.current) {
       summaryRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  }, [isSubmitted]);
+  }, [finalSummary]); // Trigger scroll when finalSummary changes
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -88,13 +99,11 @@ export default function Home() {
         className="flex flex-col items-center justify-center min-h-screen bg-cover bg-center"
         style={{
           backgroundImage: "url('/images/background.png')",
-
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed',
         }}
       >
-
         <h2 className="text-6xl text-black mb-8">Readatpaper.io</h2>
         <div className="relative flex flex-col items-center w-full max-w-lg space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
           <input
@@ -103,6 +112,7 @@ export default function Home() {
             className="w-full px-4 py-2 border-2 border-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={userInput}
             onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
           />
           <button
             onClick={sendLink}
@@ -112,12 +122,12 @@ export default function Home() {
             {isLoading ? "Loading..." : "Submit"}
           </button>
         </div>
-        <p className="italic mt-4"> Streamline Your Research, Organize Your Success </p>
+        <p className="italic mt-4">Streamline Your Research, Organize Your Success</p>
       </main>
 
       {errorMessage && <p className="mt-4 text-lg text-red-500">{errorMessage}</p>}
 
-      {finalSummary && isSubmitted && userInput &&(
+      {finalSummary && (
         <section className="bg-white py-16" ref={summaryRef}>
           <div className="container mx-auto px-4">
             <h3 className="text-4xl text-center text-gray-800 mb-6">
@@ -132,8 +142,18 @@ export default function Home() {
       )}
       {finalSummary && (
         <div className="flex items-center justify-center space-x-10">
-          <SaveButton input={userInput} />
-          <DontSaveButton />
+          <Link
+            href={{
+              pathname: "/dashboard",
+              query: {
+                summary: displayedSummary,
+              },
+            }}
+          >
+            <button className="bg-black text-white rounded px-6 py-4 hover:bg-blue-600 mt-8 mb-10">
+              Save Summary
+            </button>
+          </Link>
         </div>
       )}
     </div>
