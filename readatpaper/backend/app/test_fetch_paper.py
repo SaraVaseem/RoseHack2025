@@ -1,7 +1,7 @@
 from fetch_paper import fetch_paper
 
 # Test with a web page
-web_url = "https://www.example.com"  # Replace with an actual research paper link
+web_url = "https://arxiv.org/html/2501.13662v1"  # Replace with an actual research paper link
 print("Testing Web URL...")
 try:
     web_content = fetch_paper(web_url)
