@@ -22,9 +22,11 @@ export default function Page() {
         <div className="bg-gradient-to-t from-gray-100 via-gray-200 to-gray-300 min-h-screen">
             <div className={ lektonFont.className}>
                 <NavBar/>
+                <h1 className="text-4xl fond-bold text-center mt-8 text-gray-800">
+                    Saved Articles
+                </h1>
                 {/* Button that toggles the tab */}
                 <Button text="Open Tab" className="mt-4" />
-                DashBoard
             </div>
         </div>
     );

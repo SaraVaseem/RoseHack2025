@@ -1,5 +1,7 @@
 'use client';
 
+//Fill tab content pulled from database
+
 import { useState } from 'react';
 
 interface ButtonProps {
