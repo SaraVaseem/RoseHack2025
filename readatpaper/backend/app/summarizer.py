@@ -1,7 +1,11 @@
 import openai
 
 # Set your OpenAI API key
-#openai.api_key = 'your-api-key-here'
+# <<<<<<< bach-branch
+# # openai.api_key = 'your-api-key-here'
+# =======
+# #openai.api_key = 'your-api-key-here'
+# >>>>>>> main
 
 def summarize_paper(text):
     response = openai.ChatCompletion.create(
