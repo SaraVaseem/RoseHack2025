@@ -10,4 +10,4 @@ python-dotenv
 beautifulsoup4
 pypdf2
 tf-keras
-
+googlesearch-python
