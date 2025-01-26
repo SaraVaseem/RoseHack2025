@@ -10,7 +10,6 @@ def summarize_text(text):
     # Return the summarized text
     return summary[0]['summary_text']
 
-
 # Example text to summarize
 text = """
 Hugging Face is a company that provides tools for Natural Language Processing (NLP). 

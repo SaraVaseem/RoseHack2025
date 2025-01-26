@@ -1,36 +1,68 @@
-# Define a list of keywords to search
-keywords = ["Artificial Intelligence", "Machine Learning", "Deep Learning"]
-
+import re
 from googlesearch import search
+from scraper import fetch_web_content, fetch_pdf_content
 
-def get_related_topics(keywords):
+def extract_keywords(url, top_n=5):
     """
-    Function to search for related topics based on a list of keywords.
+    Extract keywords from a given webpage or PDF URL.
 
     Args:
-    keywords (list of str): A list of keywords to search for.
+        url (str): The URL of the research paper (HTML or PDF).
+        top_n (int): Number of top keywords to extract.
 
     Returns:
-    list of str: A list of URLs related to the keywords.
+        list: Extracted keywords.
     """
-    related_links = []  # Initialize an empty list to store the URLs
+    try:
+        # Determine content type
+        if url.endswith('.pdf'):
+            content = fetch_pdf_content(url)
+        else:
+            content = fetch_web_content(url)
+        
+        words = re.findall(r'\b[A-Za-z]{4,}\b', content)  # Extract words with 4+ characters
+        freq_dict = {}
+        for word in words:
+            freq_dict[word] = freq_dict.get(word, 0) + 1
+        
+        # Get top N keywords based on frequency
+        keywords = sorted(freq_dict, key=freq_dict.get, reverse=True)[:top_n]
+        
+        return keywords
     
-    # Iterate over the list of keywords
-    for keyword in keywords:
-        try:
-            # Perform the Google search by appending "tutorial" to the keyword
-            links = search(keyword + " tutorial", num_results=5)  # Get 5 related links
-            related_links.extend(links)  # Add the links to the result list
-        except Exception as e:
-            # Handle any exceptions that may occur (e.g., rate limiting)
-            print(f"Error occurred while searching for '{keyword}': {e}")
+    except Exception as e:
+        return f"Error extracting keywords: {str(e)}"
+
+def find_related_articles(url):
+    """
+    Find related articles based on extracted keywords from the given URL.
+
+    Args:
+        url (str): The URL of the research paper (HTML or PDF).
+
+    Returns:
+        dict: Keywords and related article links.
+    """
+    try:
+        keywords = extract_keywords(url)
+        related_articles = {}
+        
+        for keyword in keywords:
+            query = f"{keyword} research paper site:arxiv.org"
+            links = list(search(query, num_results=3))  # Get top 3 links
+            related_articles[keyword] = links
+        
+        return related_articles
     
-    return related_links
+    except Exception as e:
+        return f"Error finding related articles: {str(e)}"
 
-# Call the function and print the results
-related_links = get_related_topics(keywords)
+# Example usage
+if __name__ == "__main__":
+    paper_url = "https://arxiv.org/pdf/2104.00065.pdf"  # Replace with a real URL
+    print("Extracted Keywords:")
+    print(extract_keywords(paper_url))
 
-# Print out the related links
-print("Related Links:")
-for link in related_links:
-    print(link)
+    print("\nRelated Topics and Links:")
+    print(find_related_articles(paper_url))
+
