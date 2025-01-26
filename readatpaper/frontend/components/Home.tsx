@@ -2,18 +2,15 @@
 import { useState, useEffect } from "react";
 import SaveButton from "./SaveButton";
 import DontSaveButton from "./DontSaveButton";
-import Link from "next/link";
 
 export default function Home() {
   const [userInput, setUserInput] = useState<string>(''); // Input from the user
-  const [responseChunks, setResponseChunks] = useState<string[]>([]); // To handle streamed responses
   const [finalSummary, setFinalSummary] = useState<string>(''); // The final summary
   const [displayedSummary, setDisplayedSummary] = useState<string>(''); // Summary with typing effect
   const [isLoading, setIsLoading] = useState<boolean>(false); // Loading state
   const [errorMessage, setErrorMessage] = useState<string>(''); // Error message state
-
-  // Typing effect state
-  const [typingIndex, setTypingIndex] = useState<number>(0);
+  const [typingIndex, setTypingIndex] = useState<number>(0); // Typing effect state
+  const [showCursor, setShowCursor] = useState<boolean>(true); // Cursor blinking effect
 
   // Typing effect logic
   useEffect(() => {
@@ -21,13 +18,21 @@ export default function Home() {
       const timeout = setTimeout(() => {
         setDisplayedSummary((prev) => prev + finalSummary[typingIndex]);
         setTypingIndex(typingIndex + 1);
-      }, 25); // Typing speed set to 25ms for faster effect
+      }, 20); // Typing speed (adjust as needed)
       return () => clearTimeout(timeout);
     }
   }, [typingIndex, finalSummary]);
 
+  // Cursor blinking effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShowCursor((prev) => !prev);
+    }, 500); // Blink every 500ms
+    return () => clearInterval(interval);
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUserInput(e.target.value); // Update input state
+    setUserInput(e.target.value);
     setFinalSummary(''); // Clear previous summary
     setDisplayedSummary(''); // Reset typing effect
     setTypingIndex(0); // Reset typing index
@@ -42,7 +47,7 @@ export default function Home() {
     setErrorMessage(''); // Clear error messages
     setFinalSummary(''); // Clear old summaries
     setDisplayedSummary(''); // Reset typing effect
-    setResponseChunks([]);
+    setTypingIndex(0); // Reset typing effect
     setIsLoading(true); // Start loading state
 
     try {
@@ -57,7 +62,6 @@ export default function Home() {
       if (res.ok) {
         const json = await res.json();
         setFinalSummary(json.summary); // Set final summary for typing effect
-        setTypingIndex(0); // Reset typing effect
       } else {
         const error = await res.json();
         setErrorMessage(error.error || 'An error occurred while processing your request.');
@@ -110,28 +114,15 @@ export default function Home() {
               Here is a summary for you
             </h3>
             <div className="text-lg text-gray-700 whitespace-pre-wrap">
-              {displayedSummary || "Typing..."}
+              <span>{displayedSummary}</span>
+              {showCursor && <span className="inline-block bg-black h-6 w-1 align-middle"></span>} {/* Blinking cursor */}
             </div>
-          </section>
-
-          <div className="flex item-center justify-center space-x-10">
-            <Link
-                href={{
-                  pathname: "/dashboard",
-                  query: {
-                    summary: userInput,
-                  },
-                }}
-              >
-                Save Summary
-              </Link>
-            <DontSaveButton />
           </div>
         </section>
       )}
       {finalSummary && (
         <div className="flex items-center justify-center space-x-10">
-          <SaveButton />
+          <SaveButton input={userInput} />
           <DontSaveButton />
         </div>
       )}
