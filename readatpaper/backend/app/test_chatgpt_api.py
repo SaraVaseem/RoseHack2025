@@ -1,7 +1,7 @@
 import openai
 
 # Set your OpenAI API key here
-openai.api_key = 'your-api-key-here'
+#openai.api_key = 'your-api-key-here'
 
 def summarize_paper(text):
     """Summarizes the input text using the ChatGPT API."""
