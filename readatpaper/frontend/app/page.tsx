@@ -1,0 +1,156 @@
+"use client";
+
+import { Lekton } from "next/font/google";
+import NavBar from "../components/NavBar";
+import Link from "next/link";
+import { useState } from "react";
+import SaveButton from "../components/SaveButton";
+import DontSaveButton from "../components/DontSaveButton";
+import ArticleDetails from "../components/ArticleDetails";
+
+const lektonFont = Lekton({
+  subsets: ["latin"],
+  weight: "400",
+});
+
+export default function Page() {
+  // State to track user input
+  const [userInput, setUserInput] = useState<string>("");
+
+  // State to handle the file upload (string for file name and string for error message)
+  const [fileName, setFileName] = useState<string>(""); // Type as string
+  const [errorMessage, setErrorMessage] = useState<string>(""); // Type as string
+
+  // State to track if user enters input
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+
+  // Update state with user input
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserInput(e.target.value);
+    setIsSubmitted(false); // reset enter key tracking when storing input
+  };
+
+  // Mark as submitted when Enter is pressed
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      setIsSubmitted(true);
+    }
+  };
+
+  // Handle the file upload
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    setErrorMessage(""); // Reset error message
+    if (file) {
+      // Check if the file is a PDF
+      if (file.type === "application/pdf") {
+        setFileName(file.name); // Set the file name to display
+        console.log("Uploaded file:", file.name); // Replace with your file handling logic
+      } else {
+        setErrorMessage("Please upload a valid PDF file.");
+        setFileName(""); // Clear file name if invalid
+      }
+    }
+  };
+
+  return (
+    <>
+      <NavBar />
+      <div className="min-h-screen bg-gray-100">
+        {/* Main Content Section with Cropped Background Image */}
+        <main
+          className="flex flex-col items-center justify-center min-h-screen bg-cover bg-center"
+          style={{
+            backgroundImage: "url('/images/background.png')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundAttachment: "fixed",
+          }}
+        >
+          {/* Centered Content */}
+          <h2 className="text-6xl text-black mb-8">Readatpaper.io</h2>
+
+          {/* Search Bar and File Upload */}
+          <div className="relative flex flex-col items-center w-full max-w-lg space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
+            {/* Search Bar */}
+            <input
+              type="text"
+              placeholder="Input article link here..."
+              className="w-full px-4 py-2 border-2 border-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={userInput}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+            />
+
+            {/* Upload Button */}
+            <label
+              htmlFor="pdfUpload" // Corrected to match the id of the input
+              className="w-12 h-10 flex items-center justify-center text-white bg-black rounded-md cursor-pointer hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {/* Paperclip Icon (Heroicons) */}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M13 10V3H6v18h12V10h-5zm0 0l5 5m-5-5l-5 5"
+                />
+              </svg>
+            </label>
+            <input
+              id="pdfUpload" // Corrected to match the label's htmlFor
+              type="file"
+              accept="application/pdf"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </div>
+
+          {/* Slogan */}
+          <p className="italic mt-4">
+            {" "}
+            Streamline Your Research, Organize Your Success{" "}
+          </p>
+        </main>
+
+        {/* Display file name or error message */}
+        {fileName && (
+          <p className="mt-4 text-lg text-green-500">Uploaded: {fileName}</p>
+        )}
+        {errorMessage && (
+          <p className="mt-4 text-lg text-red-500">{errorMessage}</p>
+        )}
+
+        {/* Text Section: only opens when user submits input */}
+        {isSubmitted && userInput && (
+          <>
+            <ArticleDetails input={userInput} />
+            <div className="flex item-center justify-center space-x-10">
+              {/*<SaveButton userInput={userInput} />
+               */}
+
+              <Link
+                href={{
+                  pathname: "/dashboard",
+                  query: {
+                    summary: userInput,
+                  },
+                }}
+              >
+                Save Summary
+              </Link>
+
+              <DontSaveButton />
+            </div>
+          </>
+        )}
+      </div>
+    </>
+  );
+}
