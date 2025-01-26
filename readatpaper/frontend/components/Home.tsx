@@ -53,14 +53,16 @@ export default function Home() {
         formData.append('file', file);
       }
 
-      const response = await fetch('/api/process', {
+      const response = await fetch('http://localhost:5000/api/process', {
         method: 'POST',
         body: formData,
       });
-
+      
       if (!response.ok) {
-        throw new Error('Failed to process the request.');
+        const error = await response.json();
+        setErrorMessage(error.error || 'An error occurred while processing your request.');
       }
+      
 
       const result = await response.json();
       setBackendResponse(result.summary); // Assuming backend sends a "summary" field
