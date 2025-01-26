@@ -8,10 +8,15 @@ export default function Home() {
   const [userInput, setUserInput] = useState<string>(''); // Input from the user
   const [finalTitle, setFinalTitle] = useState<string>(''); // Article title
   const [finalSummary, setFinalSummary] = useState<string>(''); // The final summary
-  const [displayedSummary, setDisplayedSummary] = useState<string>(''); // Summary with typing effect
+  const [keywords, setKeywords] = useState<string[]>([]); // Extracted keywords
+  const [relatedLinks, setRelatedLinks] = useState<Record<string, string[]>>({}); // Related links
+  const [displayedSummary, setDisplayedSummary] = useState<string>(''); // Typing effect for summary
+  const [displayedKeywords, setDisplayedKeywords] = useState<string[]>([]); // Typing effect for keywords
+  const [displayedLinks, setDisplayedLinks] = useState<Record<string, string[]>>({}); // Typing effect for links
+  const [typingIndex, setTypingIndex] = useState<number>(0); // Typing index for current section
+  const [currentSection, setCurrentSection] = useState<'summary' | 'keywords' | 'links' | null>(null); // Track current section
   const [isLoading, setIsLoading] = useState<boolean>(false); // Loading state
   const [errorMessage, setErrorMessage] = useState<string>(''); // Error message state
-  const [typingIndex, setTypingIndex] = useState<number>(0); // Typing effect state
   const [showCursor, setShowCursor] = useState<boolean>(true); // Cursor blinking effect
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false); // Track if Enter was pressed
 
@@ -19,19 +24,21 @@ export default function Home() {
   const summaryRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (typingIndex < finalSummary.length) {
+    if (currentSection === 'summary' && typingIndex < finalSummary.length) {
       const timeout = setTimeout(() => {
         setDisplayedSummary((prev) => prev + finalSummary[typingIndex]);
+
         setTypingIndex(typingIndex + 1);
       }, 20);
       return () => clearTimeout(timeout);
     }
-  }, [typingIndex, finalSummary]);
+
 
   useEffect(() => {
     const interval = setInterval(() => {
       setShowCursor((prev) => !prev);
     }, 500);
+
     return () => clearInterval(interval);
   }, []);
 
@@ -52,7 +59,6 @@ export default function Home() {
       alert('Please enter a valid link!');
       return;
     }
-
     setErrorMessage('');
     setFinalTitle(''); // Clear old title
     setFinalSummary('');
@@ -87,7 +93,7 @@ export default function Home() {
 
   useEffect(() => {
     if (finalSummary && summaryRef.current) {
-      summaryRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      summaryRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [finalSummary]);
 
@@ -102,6 +108,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {/* Input Section */}
       <main
         className="flex flex-col items-center justify-center min-h-screen bg-cover bg-center"
         style={{
@@ -119,21 +126,20 @@ export default function Home() {
             className="w-full px-4 py-2 border-2 border-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={userInput}
             onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
           />
           <button
             onClick={sendLink}
             className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
             disabled={isLoading}
           >
-            {isLoading ? "Loading..." : "Submit"}
+            {isLoading ? 'Loading...' : 'Submit'}
           </button>
         </div>
         <p className="italic mt-4">Streamline Your Research, Organize Your Success</p>
       </main>
 
+      {/* Error Section */}
       {errorMessage && <p className="mt-4 text-lg text-red-500">{errorMessage}</p>}
-
       {finalTitle && (
         <section className="bg-white py-12" ref={summaryRef}>
           <div className="container mx-auto px-4">
