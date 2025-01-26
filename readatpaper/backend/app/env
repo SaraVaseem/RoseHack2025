@@ -1,7 +1,0 @@
-# API keys for Research Paper Analyzer (Redatpaper)
-
-# Google API key for Custom Search Engine
-GOOGLE_API_KEY = AIzaSyCwFJaagHdRY2jHFCA_CQnISTOH9yNxSRo
-
-# Google Custom Search Engine ID
-GOOGLE_CSE_ID = 87af17e9dffa94d90   # Google Custom Search Engine ID

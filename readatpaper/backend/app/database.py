@@ -1,10 +1,5 @@
-from flask import Flask, request, jsonify
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-import os
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -27,4 +22,10 @@ class AnalysisResult(db.Model):
     articles = db.Column(db.Text, nullable = False)     # Related articles (stored as JSON string)
 
     def __repr_(self):
-        return f"<AnalysisResult {self.id}"
+        return f"<AnalysisResult {self.id}>"
+
+# Create the database tables (only when this script is run directly)
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+        print("Database and tables created")
