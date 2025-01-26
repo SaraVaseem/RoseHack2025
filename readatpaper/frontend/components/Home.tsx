@@ -1,6 +1,8 @@
 'use client';
+
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [userInput, setUserInput] = useState<string>(''); // Input from the user
@@ -13,6 +15,7 @@ export default function Home() {
   const [showCursor, setShowCursor] = useState<boolean>(true); // Cursor blinking effect
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false); // Track if Enter was pressed
 
+  const router = useRouter(); // Router for navigation
   const summaryRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -88,6 +91,15 @@ export default function Home() {
     }
   }, [finalSummary]);
 
+  const saveSummary = () => {
+    if (finalTitle && finalSummary) {
+      // Redirect to dashboard with title and summary as query params
+      router.push(
+        `/dashboard?title=${encodeURIComponent(finalTitle)}&summary=${encodeURIComponent(finalSummary)}`
+      );
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <main
@@ -125,10 +137,10 @@ export default function Home() {
       {finalTitle && (
         <section className="bg-white py-12" ref={summaryRef}>
           <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-4">
-            Here's Your Summary
-          </h2>
-            <h3 className="text-2xl font-style: italic text-center text-gray-800 mb-6">
+            <h2 className="text-3xl font-bold text-center mb-4">
+              Here's Your Summary
+            </h2>
+            <h3 className="text-2xl font-italic text-center text-gray-800 mb-6">
               {finalTitle}
             </h3>
             <div className="text-lg text-gray-700 whitespace-pre-wrap">
@@ -141,18 +153,12 @@ export default function Home() {
 
       {finalSummary && (
         <div className="flex items-center justify-center space-x-10">
-          <Link
-            href={{
-              pathname: "/dashboard",
-              query: {
-                summary: displayedSummary,
-              },
-            }}
+          <button
+            onClick={saveSummary}
+            className="bg-black text-white rounded px-6 py-4 hover:bg-gray-600 mt-8 mb-10"
           >
-            <button className="bg-black text-white rounded px-6 py-4 hover:bg-gray-600 mt-8 mb-10">
-              Save Summary
-            </button>
-          </Link>
+            Save Summary
+          </button>
         </div>
       )}
     </div>
