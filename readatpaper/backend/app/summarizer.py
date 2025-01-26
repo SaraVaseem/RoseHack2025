@@ -1,7 +1,10 @@
-from transformers import pipeline
+import findspark
+findspark.init()
 
-summarizer = pipeline("summarization")
+from pyspark.sql import SparkSession
 
-def summarize_text(text):
-    summary = summarizer(text, max_length=300, min_length=100, do_sample=False)
-    return summary[0]['summary_text']
+# Create a Spark session
+spark = SparkSession.builder.appName("JupyterSpark").getOrCreate()
+
+# Check Spark session
+print("Spark version:", spark.version)
